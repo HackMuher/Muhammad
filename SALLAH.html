@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sallah Bank App</title>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, set, get, update, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+        
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcDBCCv8faeH296AgsYp78O88RHGt-Agc",
+            authDomain: "sallah-happy.firebaseapp.com",
+            projectId: "sallah-happy",
+            storageBucket: "sallah-happy.firebasestorage.app",
+            messagingSenderId: "39144116851",
+            appId: "1:39144116851:web:d0df8bb1b1b7d593df9006",
+            measurementId: "G-E941L3QJPT"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+    </script>
+</head>
+<body>
+    <h1>Welcome to Sallah Bank</h1>
+
+    <!-- Signup Form -->
+    <form id="signup-form">
+        <input type="text" id="name" placeholder="Full Name" required><br>
+        <input type="text" id="nin" placeholder="NIN" required><br>
+        <input type="tel" id="phone" placeholder="Phone Number" required><br>
+        <input type="text" id="town" placeholder="Town" required><br>
+        <input type="date" id="dob" required><br>
+        <button type="button" onclick="registerUser()">Register</button>
+    </form>
+
+    <!-- User Balance -->
+    <h2>Balance: ₦<span id="balance">0</span></h2>
+    
+    <!-- Deposit -->
+    <button onclick="depositMoney()">Deposit</button>
+    
+    <!-- Withdraw -->
+    <button onclick="withdrawMoney()">Withdraw</button>
+
+    <script type="module">
+        function registerUser() {
+            let name = document.getElementById("name").value;
+            let nin = document.getElementById("nin").value;
+            let phone = document.getElementById("phone").value;
+            let town = document.getElementById("town").value;
+            let dob = document.getElementById("dob").value;
+
+            if (!name || !nin || !phone || !town || !dob) {
+                alert("All fields are required!");
+                return;
+            }
+
+            let user = {
+                name,
+                nin,
+                phone,
+                town,
+                dob,
+                balance: Math.floor(Math.random() * 50000) + 1000,
+                vip: false,
+                accountNumber: "322" + Math.floor(Math.random() * 100000000)
+            };
+
+            const db = getDatabase();
+            set(ref(db, "users/" + phone), user)
+                .then(() => {
+                    localStorage.setItem("user", JSON.stringify(user));
+                    alert("Registration successful!");
+                })
+                .catch((error) => {
+                    console.error("Error saving data:", error);
+                });
+        }
+
+        function depositMoney() {
+            alert("Deposit money to 8035171888 (Palmpay - OGO...) and upload receipt.");
+        }
+
+        function withdrawMoney() {
+            let user = JSON.parse(localStorage.getItem("user"));
+            if (!user.vip) {
+                alert("You must unlock VIP2 to withdraw money!");
+                return;
+            }
+
+            let amount = prompt("Enter amount to withdraw:");
+            if (amount > user.balance) {
+                alert("Insufficient balance!");
+                return;
+            }
+
+            user.balance -= amount;
+
+            const db = getDatabase();
+            update(ref(db, "users/" + user.phone), { balance: user.balance });
+
+            localStorage.setItem("user", JSON.stringify(user));
+            document.getElementById("balance").innerText = user.balance;
+            alert("Withdrawal successful!");
+        }
+    </script>
+</body>
+</html>
